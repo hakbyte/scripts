@@ -3,6 +3,7 @@
 import argparse
 import os
 import ffmpeg
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
@@ -106,10 +107,13 @@ def parse_video_file(filename: Path) -> VideoInfo | None:
 def main():
     args = parse_args()
     videos = []
+    start = time.perf_counter()
     for input_file in args.input_files:
         if v := parse_video_file(input_file):
             videos.append(v)
+    end = time.perf_counter()
     pprint(videos)
+    print(f"Duration: {end - start:.2f} seconds")
 
 
 if __name__ == "__main__":
