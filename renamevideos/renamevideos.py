@@ -84,12 +84,12 @@ def build_video_list(path: str, verbose: int = 0) -> list[Path]:
     default only searches video files with `.mp4` extension.
     """
 
-    file_list = [f for f in find_video_files(Path(path))]
+    video_files = [f for f in find_video_files(Path(path))]
 
     if verbose >= 1:
-        print(f"Found {len(file_list)} video files under `{path}`")
+        print(f"Found {len(video_files)} video files under `{path}`")
 
-    return file_list
+    return video_files
 
 
 def parse_video_file(filename: Path) -> VideoInfo | None:
