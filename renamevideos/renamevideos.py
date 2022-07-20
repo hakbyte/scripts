@@ -6,6 +6,7 @@ import ffmpeg
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
+from pprint import pprint
 
 
 @dataclass
@@ -104,7 +105,11 @@ def parse_video_file(filename: Path) -> VideoInfo | None:
 
 def main():
     args = parse_args()
-    print(args)
+    videos = []
+    for input_file in args.input_files:
+        if v := parse_video_file(input_file):
+            videos.append(v)
+    pprint(videos)
 
 
 if __name__ == "__main__":
