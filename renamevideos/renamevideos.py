@@ -14,7 +14,7 @@ from pprint import pprint
 class CmdArgs:
     input_files: list[Path]
     prefix: str
-    verbose: bool
+    verbose: int
 
 
 @dataclass
@@ -51,18 +51,20 @@ def parse_args() -> CmdArgs:
     parser.add_argument(
         "-v", "--verbose",
         help="Enable verbose mode",
-        action="store_true")
+        default=0,
+        action="count")
 
     args = parser.parse_args()
 
     return CmdArgs(
-        input_files=build_video_list(args.input),
+        input_files=build_video_list(
+            args.input, args.prefix, verbose=args.verbose),
         prefix=args.prefix,
         verbose=args.verbose
     )
 
 
-def build_video_list(path: str, ext: str = ".mp4") -> list[Path]:
+def build_video_list(path: str, ext: str = ".mp4", verbose: int = 0) -> list[Path]:
     """
     Builds a list containing all video files found under the root dir. By
     default only searches video files with `.mp4` extension.
@@ -74,6 +76,9 @@ def build_video_list(path: str, ext: str = ".mp4") -> list[Path]:
             if f.lower().endswith(ext):
                 p = Path(os.path.join(root, f))
                 file_list.append(p)
+
+    if verbose >= 1:
+        print(f"Found {len(file_list)} video files under `{path}`")
 
     return file_list
 
@@ -105,7 +110,7 @@ def parse_video_file(filename: Path) -> VideoInfo | None:
         pass
 
 
-def rename_video_file(video_info: VideoInfo, prefix: str = "", dry_run=True) -> None:
+def rename_video_file(video_info: VideoInfo, prefix: str = "", dry_run: bool = True, verbose: int = 0) -> None:
     """
     Renames a video file base on its metadata.
     """
@@ -120,24 +125,32 @@ def rename_video_file(video_info: VideoInfo, prefix: str = "", dry_run=True) -> 
     new_filename = prefix + SEP + metadata + video_info.path.suffix.lower()
 
     # Rename video
-    if dry_run:
-        p = Path.joinpath(video_info.path.parent, new_filename)
-        print(p)
+    p = Path.joinpath(video_info.path.parent, new_filename)
+    if verbose >= 2:
+        print(
+            f"Renaming `{video_info.path}` to `{p}`")
 
 
 async def main():
     args = parse_args()
-
     # Create list of tasks and run them concurrently
     tasks = []
     loop = asyncio.get_running_loop()
     for input_file in args.input_files:
         tasks.append(loop.run_in_executor(None, parse_video_file, input_file))
 
-    metadata_tasks = [await task for task in tasks]
-    for video in metadata_tasks:
-        rename_video_file(video, args.prefix)
+    if args.verbose >= 1:
+        print(f"Extracted metadata from {len(tasks)} video files")
 
+    metadata_tasks = [await task for task in tasks]
+    if args.verbose >= 1:
+        print(f"Renaming {len(metadata_tasks)} video files...")
+
+    for video in metadata_tasks:
+        rename_video_file(video, args.prefix, verbose=args.verbose)
+
+    if args.verbose >= 1:
+        print(f"Done!")
 
 if __name__ == "__main__":
     asyncio.run(main())
