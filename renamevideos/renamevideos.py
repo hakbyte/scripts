@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
+import asyncio
 import ffmpeg
+import os
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from pprint import pprint
 
 
@@ -104,17 +105,23 @@ def parse_video_file(filename: Path) -> VideoInfo | None:
         pass
 
 
-def main():
+async def main():
     args = parse_args()
-    videos = []
+
+    # Create list of tasks and run them concurrently
     start = time.perf_counter()
+    tasks = []
+    loop = asyncio.get_event_loop()
     for input_file in args.input_files:
-        if v := parse_video_file(input_file):
-            videos.append(v)
+        tasks.append(loop.run_in_executor(None, parse_video_file, input_file))
+
+    result = [await task for task in tasks]
     end = time.perf_counter()
-    pprint(videos)
+
+    pprint(result)
     print(f"Duration: {end - start:.2f} seconds")
 
 
 if __name__ == "__main__":
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
