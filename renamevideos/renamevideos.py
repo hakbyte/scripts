@@ -4,6 +4,7 @@ import argparse
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from datetime import date
 
 
 @dataclass
@@ -11,6 +12,14 @@ class CmdArgs:
     input_files: list[Path]
     prefix: str
     verbose: bool
+
+
+@dataclass
+class VideoInfo:
+    path: Path
+    fps: int
+    resolution: tuple[int, int]
+    creation_time: date
 
 
 def parse_args() -> CmdArgs:
