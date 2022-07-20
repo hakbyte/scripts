@@ -104,6 +104,26 @@ def parse_video_file(filename: Path) -> VideoInfo | None:
         pass
 
 
+def rename_video_file(video_info: VideoInfo, prefix: str = "", dry_run=True) -> None:
+    """
+    Renames a video file base on its metadata.
+    """
+
+    # Build filename from video metadata
+    SEP = "_"
+    resolution = f"{video_info.resolution[0]}x{video_info.resolution[1]}"
+    fps = f"{video_info.fps}fps"
+    creation_time = video_info.creation_time.strftime("%Y-%m-%dT%H%M%S")
+    metadata = SEP.join([resolution, fps, creation_time])
+    prefix = prefix if prefix else video_info.path.stem
+    new_filename = prefix + SEP + metadata + video_info.path.suffix.lower()
+
+    # Rename video
+    if dry_run:
+        p = Path.joinpath(video_info.path.parent, new_filename)
+        print(p)
+
+
 async def main():
     args = parse_args()
 
@@ -113,8 +133,9 @@ async def main():
     for input_file in args.input_files:
         tasks.append(loop.run_in_executor(None, parse_video_file, input_file))
 
-    result = [await task for task in tasks]
-    pprint(result)
+    metadata_tasks = [await task for task in tasks]
+    for video in metadata_tasks:
+        rename_video_file(video, args.prefix)
 
 
 if __name__ == "__main__":
