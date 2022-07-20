@@ -54,15 +54,15 @@ def parse_args() -> CmdArgs:
     args = parser.parse_args()
 
     return CmdArgs(
-        input_files=build_file_list(args.input),
+        input_files=build_video_list(args.input),
         prefix=args.prefix,
         verbose=args.verbose
     )
 
 
-def build_file_list(path: str, ext: str = ".mp4") -> list[Path]:
+def build_video_list(path: str, ext: str = ".mp4") -> list[Path]:
     """
-    Builds file list containing all video files found under the root dir. By
+    Builds a list containing all video files found under the root dir. By
     default only searches video files with `.mp4` extension.
     """
 
