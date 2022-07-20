@@ -57,7 +57,10 @@ def parse_args() -> CmdArgs:
 
     return CmdArgs(
         input_files=build_video_list(
-            args.input, args.prefix, verbose=args.verbose),
+            args.input,
+            args.prefix,
+            verbose=args.verbose
+        ),
         prefix=args.prefix,
         verbose=args.verbose
     )
@@ -126,11 +129,14 @@ def rename_video_file(video_info: VideoInfo, prefix: str = "", dry_run: bool = T
     # Rename video
     p = Path.joinpath(video_info.path.parent, new_filename)
     if verbose >= 2:
-        print(
-            f"Renaming `{video_info.path}` to `{p}`")
+        print(f"Renaming `{video_info.path}` to `{p}`")
 
 
 async def main():
+    """
+    Entry point for application logic.
+    """
+
     args = parse_args()
     # Create list of tasks and run them concurrently
     tasks = []
@@ -150,6 +156,11 @@ async def main():
 
     if args.verbose >= 1:
         print(f"Done!")
+
+
+#
+# Entry point
+#
 
 if __name__ == "__main__":
     asyncio.run(main())
