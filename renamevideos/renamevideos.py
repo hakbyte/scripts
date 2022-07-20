@@ -3,10 +3,10 @@
 import argparse
 import asyncio
 import ffmpeg
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Iterator
 
 
 @dataclass
@@ -58,7 +58,6 @@ def parse_args() -> CmdArgs:
     return CmdArgs(
         input_files=build_video_list(
             args.input,
-            args.prefix,
             verbose=args.verbose
         ),
         prefix=args.prefix,
@@ -66,18 +65,26 @@ def parse_args() -> CmdArgs:
     )
 
 
-def build_video_list(path: str, ext: str = ".mp4", verbose: int = 0) -> list[Path]:
+def find_video_files(root: Path, ext: str = ".mp4") -> Iterator[Path]:
+    """
+    Recursively searches for video files under a root directory. Only files with
+    the provided file extension are returned.
+    """
+
+    for path in root.iterdir():
+        if path.is_dir():
+            yield from find_video_files(path)
+        elif path.is_file and path.suffix.lower() == ext:
+            yield path
+
+
+def build_video_list(path: str, verbose: int = 0) -> list[Path]:
     """
     Builds a list containing all video files found under the root dir. By
     default only searches video files with `.mp4` extension.
     """
 
-    file_list = []
-    for root, _, files in os.walk(path):
-        for f in files:
-            if f.lower().endswith(ext):
-                p = Path(os.path.join(root, f))
-                file_list.append(p)
+    file_list = [f for f in find_video_files(Path(path))]
 
     if verbose >= 1:
         print(f"Found {len(file_list)} video files under `{path}`")
