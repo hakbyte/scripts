@@ -89,6 +89,7 @@ def parse_video_file(filename: Path) -> VideoInfo | None:
     """
     Parses a video file and returns its metadata packaged as a VideoInfo object.
     """
+
     try:
         # Tries to retrieve video metadata in JSON format
         probe = ffmpeg.probe(filename)
