@@ -3,11 +3,12 @@
 import argparse
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
 class CmdArgs:
-    input_files: list[str]
+    input_files: list[Path]
     prefix: str
     verbose: bool
 
@@ -48,7 +49,7 @@ def parse_args() -> CmdArgs:
     )
 
 
-def build_file_list(path: str, ext: str = ".mp4") -> list[str]:
+def build_file_list(path: str, ext: str = ".mp4") -> list[Path]:
     """
     Builds file list containing all video files found under the root dir. By
     default only searches video files with `.mp4` extension.
@@ -58,7 +59,8 @@ def build_file_list(path: str, ext: str = ".mp4") -> list[str]:
     for root, _, files in os.walk(path):
         for f in files:
             if f.lower().endswith(ext):
-                file_list.append(os.path.join(root, f))
+                p = Path(os.path.join(root, f))
+                file_list.append(p)
 
     return file_list
 
