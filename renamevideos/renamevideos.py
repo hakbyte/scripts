@@ -45,6 +45,7 @@ def parse_args() -> CmdArgs:
         "-p", "--prefix",
         help="Prefix to add to video files when renaming them",
         type=str,
+        default="",
         nargs="?")
 
     parser.add_argument(
