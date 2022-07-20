@@ -130,7 +130,7 @@ async def main():
 
     # Create list of tasks and run them concurrently
     tasks = []
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     for input_file in args.input_files:
         tasks.append(loop.run_in_executor(None, parse_video_file, input_file))
 
@@ -140,5 +140,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.run(main())
