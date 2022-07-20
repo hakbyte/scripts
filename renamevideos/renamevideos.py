@@ -2,9 +2,10 @@
 
 import argparse
 import os
+import ffmpeg
 from dataclasses import dataclass
 from pathlib import Path
-from datetime import date
+from datetime import datetime
 
 
 @dataclass
@@ -19,7 +20,7 @@ class VideoInfo:
     path: Path
     fps: int
     resolution: tuple[int, int]
-    creation_time: date
+    creation_time: datetime
 
 
 def parse_args() -> CmdArgs:
@@ -72,6 +73,33 @@ def build_file_list(path: str, ext: str = ".mp4") -> list[Path]:
                 file_list.append(p)
 
     return file_list
+
+
+def parse_video_file(filename: Path) -> VideoInfo | None:
+    """
+    Parses a video file and returns its metadata packaged as a VideoInfo object.
+    """
+    try:
+        # Tries to retrieve video metadata in JSON format
+        probe = ffmpeg.probe(filename)
+        info = next(s for s in probe.get("streams")
+                    if s.get("codec_type") == "video")
+
+        # Build VideoInfo object from JSON metadata
+        frame_rate = int(info.get("r_frame_rate").split("/")[0])
+        width = int(info.get("width"))
+        height = int(info.get("height"))
+        timestamp = info.get("tags").get("creation_time")
+
+        return VideoInfo(
+            path=filename,
+            fps=frame_rate,
+            resolution=(width, height),
+            creation_time=datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+        )
+    except ffmpeg.Error as e:
+        # TODO: handle error instead of just ignoring it
+        pass
 
 
 def main():
